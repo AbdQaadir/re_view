@@ -48,36 +48,45 @@ export async function POST(req: Request) {
     });
   }
 
-  // Do something with payload
-  // For this guide, log payload to console
-  const { id } = evt.data;
   const eventType = evt.type;
-  console.log(`Received webhook with ID ${id} and event type of ${eventType}`);
-  console.log("Webhook payload:", body);
 
-  if (eventType === "user.created") {
-    const data = evt.data;
-    supabase.from("user").insert({
-      user_id: data.id,
-      email: data.email_addresses[0].email_address,
-      first_name: data.first_name,
-      last_name: data.last_name,
-      profile_image: data.image_url,
-    });
-  }
-
-  if (eventType === "user.updated") {
-    const data = evt.data;
-    supabase
-      .from("user")
-      .update({
+  try {
+    if (eventType === "user.created") {
+      const data = evt.data;
+      await supabase.from("user").insert({
+        user_id: data.id,
         email: data.email_addresses[0].email_address,
         first_name: data.first_name,
         last_name: data.last_name,
         profile_image: data.image_url,
-      })
-      .eq("user_id", data.id);
-  }
+      });
+    }
 
-  return new Response("Webhook received", { status: 200 });
+    if (eventType === "user.updated") {
+      const data = evt.data;
+
+      await supabase
+        .from("user")
+        .upsert(
+          {
+            user_id: data.id,
+            email: data.email_addresses[0].email_address,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            profile_image: data.image_url,
+          },
+          {
+            onConflict: "user_id",
+          }
+        )
+        .eq("user_id", data.id);
+    }
+
+    return new Response("Webhook received", { status: 200 });
+  } catch (error: any) {
+    console.log("Supabase error:", error);
+    return new Response("Error: Supabase error" + error.message, {
+      status: 500,
+    });
+  }
 }
