@@ -7,7 +7,7 @@ async function createServerSupabaseClient() {
     process.env.NEXT_PUBLIC_SUPABASE_KEY!,
     {
       async accessToken() {
-        return (await auth()).getToken();
+        return (await auth()).getToken() || "";
       },
     }
   );
