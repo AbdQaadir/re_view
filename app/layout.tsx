@@ -5,6 +5,7 @@ import "./globals.css";
 
 import Header from "./_components/Header";
 import { Loader } from "lucide-react";
+import { Toaster } from "sonner";
 
 const lexendSans = Lexend({
   variable: "--font-lexend-sans",
@@ -43,6 +44,8 @@ export default function RootLayout({
 
             {children}
           </ClerkLoaded>
+
+          <Toaster position="top-center" />
         </body>
       </html>
     </ClerkProvider>

@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import supabase from "@/lib/supabase";
+import { DB_TABLES } from "@/app/_constants";
 
 export async function POST(req: Request) {
   const SIGNING_SECRET = process.env.SIGNING_SECRET;
@@ -53,7 +54,7 @@ export async function POST(req: Request) {
   try {
     if (eventType === "user.created") {
       const data = evt.data;
-      await supabase.from("user").insert({
+      await supabase.from(DB_TABLES.USER).insert({
         user_id: data.id,
         email: data.email_addresses[0].email_address,
         first_name: data.first_name,
@@ -66,7 +67,7 @@ export async function POST(req: Request) {
       const data = evt.data;
 
       await supabase
-        .from("user")
+        .from(DB_TABLES.USER)
         .upsert(
           {
             user_id: data.id,

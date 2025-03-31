@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { ProductType, ReviewType } from "@/types";
 import useSupabase from "./useSupabase";
-import { ProductCategory } from "@/app/_constants";
+import { DB_TABLES, ProductCategory } from "@/app/_constants";
 
 type FetchProductsType = {
   limit?: number;
@@ -19,7 +19,7 @@ export function useProducts() {
     async ({ limit, category, filter }: FetchProductsType) => {
       setLoading(true);
       try {
-        let query = supabase.from("product").select(
+        let query = supabase.from(DB_TABLES.PRODUCT).select(
           `*, reviews:
             review(
               *
@@ -73,9 +73,88 @@ export function useProducts() {
     []
   );
 
+  const [productsByCategory, setProductsByCategory] = useState<{
+    [key: string]: ProductType[];
+  }>({});
+
+  const [topRatedProducts, setTopRatedProducts] = useState<ProductType[]>([]);
+
+  const fetchProductsByCategory = async () => {
+    Promise.allSettled([
+      fetchProducts({
+        limit: undefined,
+        category: ProductCategory.Beauty,
+        filter: "all",
+      }),
+      fetchProducts({
+        limit: undefined,
+        category: ProductCategory.Laptops,
+        filter: "all",
+      }),
+      fetchProducts({
+        limit: undefined,
+        category: ProductCategory.Smartphones,
+        filter: "all",
+      }),
+      fetchProducts({
+        limit: undefined,
+        category: ProductCategory.Tablets,
+        filter: "all",
+      }),
+      fetchProducts({
+        limit: undefined,
+        category: ProductCategory.Vehicle,
+        filter: "all",
+      }),
+      fetchProducts({ limit: 4, category: undefined, filter: "top" }),
+    ]).then((results) => {
+      const [
+        beautyProducts,
+        laptopProducts,
+        smartphoneProducts,
+        tabletProducts,
+        vehicleProducts,
+        topRatedProducts,
+      ] = results;
+
+      const products: {
+        [key: string]: ProductType[];
+      } = {};
+
+      if (beautyProducts.status === "fulfilled") {
+        products[ProductCategory.Beauty] =
+          beautyProducts.value as ProductType[];
+      }
+
+      if (laptopProducts.status === "fulfilled") {
+        products[ProductCategory.Laptops] = laptopProducts.value;
+      }
+
+      if (smartphoneProducts.status === "fulfilled") {
+        products[ProductCategory.Smartphones] = smartphoneProducts.value;
+      }
+
+      if (tabletProducts.status === "fulfilled") {
+        products[ProductCategory.Tablets] = tabletProducts.value;
+      }
+
+      if (vehicleProducts.status === "fulfilled") {
+        products[ProductCategory.Vehicle] = vehicleProducts.value;
+      }
+
+      setProductsByCategory(products);
+
+      if (topRatedProducts.status === "fulfilled") {
+        setTopRatedProducts(topRatedProducts.value);
+      }
+    });
+  };
+
   return {
     loading,
     error,
-    fetchProducts,
+    productsByCategory,
+    topRatedProducts,
+    fetchProductsByCategory,
   };
 }

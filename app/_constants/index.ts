@@ -1,6 +1,13 @@
 export enum ProductCategory {
-  Electronics = "electronics",
-  Men_Clothing = "men_clothing",
-  Women_Clothing = "women_clothing",
-  Jewelery = "jewelery",
+  Beauty = "beauty",
+  Smartphones = "smartphones",
+  Laptops = "laptops",
+  Tablets = "tablets",
+  Vehicle = "vehicle",
+}
+
+export enum DB_TABLES {
+  PRODUCT = "product",
+  REVIEW = "review",
+  USER = "user",
 }

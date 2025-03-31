@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
-import { LogInIcon, PlusIcon } from "lucide-react";
+import { LogInIcon } from "lucide-react";
 import Link from "next/link";
 
 export default function Header() {
   return (
-    <header className="w-full flex justify-between items-center p-4 h-16">
+    <header className="w-full flex justify-between items-center p-4 h-16 shadow-sm bg-white">
       <Link href="/">
         <h1 className="text-lg md:text-2xl font-bold">re_view</h1>
       </Link>
@@ -22,11 +22,6 @@ export default function Header() {
         </SignedOut>
 
         <SignedIn>
-          <Button size="sm" variant="link" className="hidden md:inline">
-            <PlusIcon className="w-4 h-4" />
-            Add product
-          </Button>
-
           <Link href="/my-reviews">
             <Button size="sm" variant="default">
               My reviews

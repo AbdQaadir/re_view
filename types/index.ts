@@ -1,5 +1,15 @@
 import { ProductCategory } from "@/app/_constants";
 
+export type UserType = {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  profile_image: string;
+  user_id: string;
+  created_at: string;
+};
 export type ProductType = {
   id: string;
   created_at: string;
@@ -21,9 +31,14 @@ export type ReviewType = {
   id: string;
   product_id: string;
   user_id: string;
+  user_id_to_user?: UserType;
   rating: number;
-  comment: string;
+  title: string;
+  review?: string;
   created_at: string;
+
+  // Related data
+  product?: ProductType;
 };
 export type FakeProductType = {
   id: number;

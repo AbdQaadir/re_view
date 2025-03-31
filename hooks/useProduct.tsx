@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
-import { ProductType } from "@/types";
+import { ProductType, ReviewType } from "@/types";
 import useSupabase from "./useSupabase";
+import { DB_TABLES } from "@/app/_constants";
 
 export function useProduct(productId: string) {
   const supabase = useSupabase();
 
   const [product, setProduct] = useState<ProductType | null>(null);
-  const [reviews, setReviews] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<ReviewType[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,8 +16,8 @@ export function useProduct(productId: string) {
     try {
       // Fetch product with reviews
       const { data, error } = await supabase
-        .from("product")
-        .select("*, review(*, user_id(*))") // Get product + reviews + user details
+        .from(DB_TABLES.PRODUCT)
+        .select("*, reviews:review(*, user_id_to_user:user_id(*))") // Get product + reviews + user details
         .eq("id", productId)
         .single();
 
@@ -31,9 +32,13 @@ export function useProduct(productId: string) {
     }
   }, [productId]);
 
+  const refresh = useCallback(() => {
+    fetchProduct();
+  }, [fetchProduct]);
+
   useEffect(() => {
     if (productId) fetchProduct();
   }, [productId, fetchProduct]);
 
-  return { product, reviews, loading, error };
+  return { product, reviews, loading, error, refresh };
 }
