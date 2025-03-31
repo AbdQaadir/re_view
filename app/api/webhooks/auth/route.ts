@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { UserJSON, WebhookEvent } from "@clerk/nextjs/server";
+import { WebhookEvent } from "@clerk/nextjs/server";
 import supabase from "@/lib/supabase";
 
 export async function POST(req: Request) {
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   // Get body
-  const payload: UserJSON = await req.json();
+  const payload = await req.json();
   const body = JSON.stringify(payload);
 
   let evt: WebhookEvent;
@@ -56,25 +56,27 @@ export async function POST(req: Request) {
   console.log("Webhook payload:", body);
 
   if (eventType === "user.created") {
+    const data = evt.data;
     supabase.from("user").insert({
-      user_id: payload.id,
-      email: payload.email_addresses[0].email_address,
-      first_name: payload.first_name,
-      last_name: payload.last_name,
-      profile_image: payload.image_url,
+      user_id: data.id,
+      email: data.email_addresses[0].email_address,
+      first_name: data.first_name,
+      last_name: data.last_name,
+      profile_image: data.image_url,
     });
   }
 
   if (eventType === "user.updated") {
+    const data = evt.data;
     supabase
       .from("user")
       .update({
-        email: payload.email_addresses[0].email_address,
-        first_name: payload.first_name,
-        last_name: payload.last_name,
-        profile_image: payload.image_url,
+        email: data.email_addresses[0].email_address,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        profile_image: data.image_url,
       })
-      .eq("user_id", payload.id);
+      .eq("user_id", data.id);
   }
 
   return new Response("Webhook received", { status: 200 });
