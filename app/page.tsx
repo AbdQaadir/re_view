@@ -5,7 +5,7 @@ import { ProductType } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
 import SearchBar from "./_components/SearchBar";
 import { useRouter } from "next/navigation";
-import ProductCardSkeleton from "./_components/ProductCardSkeleton";
+import ProductCardSkeleton from "./_components/skeletons/ProductCardSkeleton";
 
 export default function Home() {
   const router = useRouter();

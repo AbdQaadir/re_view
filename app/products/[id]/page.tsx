@@ -14,7 +14,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
-import ProductPageSkeleton from "@/app/_components/ProductPageSkeleton";
+import ProductPageSkeleton from "@/app/_components/skeletons/ProductPageSkeleton";
 import StarRatingSummary from "@/app/_components/StarRatingSummary";
 
 export default function ProductPage() {

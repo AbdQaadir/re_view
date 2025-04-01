@@ -11,7 +11,6 @@ const StarRatingSummary: React.FC<RatingSummaryProps> = ({
   totalReviews,
   ratingDistribution,
 }) => {
-  console.log({ ratingDistribution });
   return (
     <div className="flex gap-6 border rounded-lg p-4 shadow-md w-72 bg-white">
       <div>

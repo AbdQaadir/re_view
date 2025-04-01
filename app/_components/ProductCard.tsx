@@ -33,7 +33,6 @@ export default function ProductCard({
   className = "",
 }: ProductCardProps) {
   const scaleValue = useMemo(() => {
-    console.log({ category });
     if (category === ProductCategory.Vehicle) {
       return 150;
     }
