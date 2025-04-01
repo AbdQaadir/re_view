@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ProductType, ReviewType } from "@/types";
 import useSupabase from "./useSupabase";
 import { DB_TABLES, ProductCategory } from "@/app/_constants";
@@ -11,7 +11,7 @@ type FetchProductsType = {
 export function useProducts() {
   const supabase = useSupabase();
 
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch all products (filtered by category, limit)
@@ -75,7 +75,13 @@ export function useProducts() {
 
   const [productsByCategory, setProductsByCategory] = useState<{
     [key: string]: ProductType[];
-  }>({});
+  }>({
+    [ProductCategory.Beauty]: [],
+    [ProductCategory.Laptops]: [],
+    [ProductCategory.Smartphones]: [],
+    [ProductCategory.Tablets]: [],
+    [ProductCategory.Vehicle]: [],
+  });
 
   const [topRatedProducts, setTopRatedProducts] = useState<ProductType[]>([]);
 
@@ -150,11 +156,13 @@ export function useProducts() {
     });
   };
 
+  useEffect(() => {
+    fetchProductsByCategory();
+  }, []);
   return {
     loading,
     error,
     productsByCategory,
     topRatedProducts,
-    fetchProductsByCategory,
   };
 }

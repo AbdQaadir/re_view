@@ -1,14 +1,21 @@
 import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ReviewType } from "@/types";
 import { useUser } from "@clerk/nextjs";
-import { Trash } from "lucide-react";
+import { EllipsisVertical, Pen, Trash } from "lucide-react";
 import React from "react";
 
 type ReviewCard = {
   review: ReviewType;
+  isDeleting?: boolean;
   onDelete: (id: string) => void;
+  onEdit: (id: string) => void;
 };
-function ReviewCard({ review, onDelete }: ReviewCard) {
+function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
   const { user } = useUser();
 
   const isMyReview = review.user_id === user?.id;
@@ -26,13 +33,38 @@ function ReviewCard({ review, onDelete }: ReviewCard) {
         </p>
 
         {isMyReview && (
-          <Button
-            variant="destructive"
-            size="icon"
-            onClick={() => onDelete(review.id)}
-          >
-            <Trash size={16} />
-          </Button>
+          <Popover>
+            <PopoverTrigger>
+              <EllipsisVertical
+                size={20}
+                className="cursor-pointer text-gray-500"
+              />
+            </PopoverTrigger>
+            <PopoverContent
+              side="left"
+              sideOffset={10}
+              className="w-auto flex flex-col gap-2 p-2 bg-white shadow-md rounded-md"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-left justify-start text-red-500 hover:text-red-600"
+                onClick={() => onDelete(review.id)}
+              >
+                <Trash size={16} />
+                {isDeleting ? "Deleting..." : "Delete review"}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-left justify-start"
+                onClick={() => onEdit(review.id)}
+              >
+                <Pen size={16} />
+                Edit
+              </Button>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
       <p className="text-yellow-500">⭐ {review.rating}/5</p>

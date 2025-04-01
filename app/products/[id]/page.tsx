@@ -1,12 +1,13 @@
 "use client";
 
-import AddReviewModal from "@/app/_components/AddReviewModal";
+import ReviewModal from "@/app/_components/ReviewModal";
 import ReviewCard from "@/app/_components/ReviewCard";
 import { DB_TABLES } from "@/app/_constants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useProduct } from "@/hooks/useProduct";
 import useSupabase from "@/hooks/useSupabase";
+import { ReviewType } from "@/types";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ArrowLeft, Loader, PlusIcon, Search } from "lucide-react";
 import Image from "next/image";
@@ -27,7 +28,9 @@ export default function ProductPage() {
   );
 
   // States
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<ReviewType | null>(null);
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
   // Calculate average rating
@@ -56,12 +59,24 @@ export default function ProductPage() {
   const handleDeleteReview = async (id: string) => {
     // Delete review
     try {
+      setIsDeleting(true);
       await supabase.from(DB_TABLES.REVIEW).delete().eq("id", id);
       handleRefresh();
     } catch (error) {
       toast.error("Failed to delete review");
       console.log("Error deleting review", error);
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleEditReview = (id: string) => {
+    const review = reviews.find((r) => r.id === id);
+    if (!review) return;
+
+    // Open modal with review data
+    setSelectedReview(review);
+    setIsModalOpen(true);
   };
 
   const onClickAddReview = () => {
@@ -81,13 +96,14 @@ export default function ProductPage() {
   return (
     <>
       {isModalOpen && (
-        <AddReviewModal
+        <ReviewModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
             setIsModalOpen(false);
             handleRefresh();
           }}
+          selectedReview={selectedReview}
           productId={id as string}
         />
       )}
@@ -103,7 +119,7 @@ export default function ProductPage() {
         </div>
       )}
       {product && (
-        <div className="max-w-6xl mx-auto py-3 md:py-6 px-3 md:px-6">
+        <div className="max-w-6xl mx-auto py-3 md:py-6 px-3 md:px-6 pb-24">
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={handleGoBack}>
               <ArrowLeft className="w-4 h-4" />
@@ -190,7 +206,9 @@ export default function ProductPage() {
                     <ReviewCard
                       key={review.id}
                       review={review}
+                      isDeleting={isDeleting}
                       onDelete={handleDeleteReview}
+                      onEdit={handleEditReview}
                     />
                   ))}
                 </div>

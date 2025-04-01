@@ -16,30 +16,35 @@ import {
 import { Label } from "@/components/ui/label";
 import { Loader } from "lucide-react";
 import { DB_TABLES } from "../_constants";
+import { ReviewType } from "@/types";
 
-export default function AddReviewModal({
+export default function ReviewModal({
   productId,
   isOpen,
   onClose,
   onSuccess,
+  selectedReview,
 }: {
   productId: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  selectedReview?: ReviewType | null;
 }) {
   const { user } = useUser();
   const supabase = useSupabase();
 
   const [formData, setFormData] = useState({
-    rating: 5,
-    title: "",
-    review: "",
+    rating: selectedReview?.rating || 5,
+    title: selectedReview?.title || "",
+    review: selectedReview?.review || "",
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isEditing = !!selectedReview?.id;
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -60,6 +65,29 @@ export default function AddReviewModal({
         return;
       }
 
+      // Update existing review
+      if (isEditing) {
+        const { error } = await supabase
+          .from(DB_TABLES.REVIEW)
+          .update({
+            rating: formData.rating,
+            title: formData.title,
+            review: formData.review,
+          })
+          .eq("id", selectedReview?.id)
+          .select();
+
+        if (error) {
+          return toast.error(error.message);
+        }
+
+        toast.success("Review updated successfully");
+        onSuccess();
+
+        return;
+      }
+
+      // Create new review
       const { error } = await supabase.from(DB_TABLES.REVIEW).insert([
         {
           product_id: productId,
@@ -107,7 +135,9 @@ export default function AddReviewModal({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add Review</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Update Review" : "Add Review"}
+          </DialogTitle>
           <DialogDescription>
             Share your experience with the product
           </DialogDescription>
@@ -136,7 +166,7 @@ export default function AddReviewModal({
 
         {/* Title */}
         <div className="flex flex-col gap-1">
-          <Label className="block font-semibold" htmlFor="title">
+          <Label htmlFor="title">
             Title <span className="text-red-500">*</span>
           </Label>
           <input
@@ -144,7 +174,7 @@ export default function AddReviewModal({
             id="title"
             value={formData.title}
             onChange={(e) => handleChange("title", e.target.value)}
-            className="w-full p-2 border rounded"
+            className="w-full p-2 border rounded font-light text-sm"
             placeholder="Title of your review"
           />
           {formErrors.title && (
@@ -154,14 +184,14 @@ export default function AddReviewModal({
 
         {/* Comment */}
         <div className="flex flex-col gap-1">
-          <Label className="block font-semibold" htmlFor="review">
-            Review <span className="text-gray-500">(optional)</span>
+          <Label htmlFor="review">
+            Review <span className="text-gray-500 font-light">(optional)</span>
           </Label>
           <textarea
             value={formData.review}
             id="review"
             onChange={(e) => handleChange("review", e.target.value)}
-            className="w-full p-2 border rounded h-20"
+            className="w-full p-2 border rounded h-20 font-light text-sm"
             placeholder="Write your review here..."
           />
         </div>
@@ -177,7 +207,7 @@ export default function AddReviewModal({
 
             <Button variant="default" onClick={handleSubmit} disabled={loading}>
               {loading && <Loader size={16} className="animate-spin" />}
-              Submit
+              {isEditing ? "Update" : "Submit"}
             </Button>
           </div>
         </DialogFooter>

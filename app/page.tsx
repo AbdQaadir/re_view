@@ -1,29 +1,19 @@
 "use client";
 
-import { useEffect } from "react";
 import ProductCard from "./_components/ProductCard";
 import { ProductType } from "@/types";
 import { useProducts } from "@/hooks/useProducts";
-import { Loader } from "lucide-react";
 import SearchBar from "./_components/SearchBar";
 import { useRouter } from "next/navigation";
+import ProductCardSkeleton from "./_components/ProductCardSkeleton";
 
 export default function Home() {
   const router = useRouter();
-  const {
-    loading,
-    productsByCategory,
-    topRatedProducts,
-    fetchProductsByCategory,
-  } = useProducts();
+  const { loading, productsByCategory, topRatedProducts } = useProducts();
 
   const handleSearchClick = (product: ProductType) => {
     router.push(`/products/${product.id}`);
   };
-
-  useEffect(() => {
-    fetchProductsByCategory();
-  }, []);
 
   return (
     <div className="p-2 pb-2 flex flex-col gap-6">
@@ -62,15 +52,17 @@ export default function Home() {
             </p>
           </div>
 
-          {loading && (
-            <div className="flex items-center justify-center w-full h-32">
-              <Loader size={32} className="animate-spin text-gray-800" />
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 min-h-[300px]">
+            {loading && (
+              <>
+                {[...Array(4)].map((_, i) => (
+                  <ProductCardSkeleton key={i} />
+                ))}
+              </>
+            )}
 
-          {!loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {topRatedProducts?.map((product, index) => {
+            {!loading &&
+              topRatedProducts?.map((product, index) => {
                 return (
                   <ProductCard
                     key={`product-$${product.id}-${index}`}
@@ -84,8 +76,7 @@ export default function Home() {
                   />
                 );
               })}
-            </div>
-          )}
+          </div>
         </section>
 
         {/* Products by Category */}
@@ -110,23 +101,32 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {categoryProducts.map((product, index) => {
-                  return (
-                    <ProductCard
-                      key={`product-$${product.id}-${index}`}
-                      id={product.id}
-                      name={product.name}
-                      description={product.description}
-                      image_url={product.image_url}
-                      thumbnail={product.thumbnail}
-                      category={product.category}
-                      showCategory={false}
-                      rating={product.rating}
-                      review_count={product.review_count}
-                    />
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 min-h-[300px]">
+                {loading && (
+                  <>
+                    {[...Array(4)].map((_, i) => (
+                      <ProductCardSkeleton key={i} />
+                    ))}
+                  </>
+                )}
+
+                {!loading &&
+                  categoryProducts.map((product, index) => {
+                    return (
+                      <ProductCard
+                        key={`product-$${product.id}-${index}`}
+                        id={product.id}
+                        name={product.name}
+                        description={product.description}
+                        image_url={product.image_url}
+                        thumbnail={product.thumbnail}
+                        category={product.category}
+                        showCategory={false}
+                        rating={product.rating}
+                        review_count={product.review_count}
+                      />
+                    );
+                  })}
               </div>
             </section>
           );

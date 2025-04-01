@@ -59,6 +59,7 @@ export async function POST(req: Request) {
         email: data.email_addresses[0].email_address,
         first_name: data.first_name,
         last_name: data.last_name,
+        username: data?.username,
         profile_image: data.image_url,
       });
     }
@@ -74,6 +75,7 @@ export async function POST(req: Request) {
             email: data.email_addresses[0].email_address,
             first_name: data.first_name,
             last_name: data.last_name,
+            username: data?.username,
             profile_image: data.image_url,
           },
           {

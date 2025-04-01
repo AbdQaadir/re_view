@@ -23,7 +23,7 @@ export default function Header() {
 
         <SignedIn>
           <Link href="/my-reviews">
-            <Button size="sm" variant="default">
+            <Button size="sm" variant="outline" className="rounded-md">
               My reviews
             </Button>
           </Link>
