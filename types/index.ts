@@ -18,6 +18,7 @@ export type ProductType = {
   description: string;
   user_id: string;
   image_url: string;
+  thumbnail: string;
 
   rating?: number;
   reviews?: ReviewType[];

@@ -28,10 +28,10 @@ export default function Home() {
   return (
     <div className="p-2 pb-2 flex flex-col gap-6">
       {/* Hero section */}
-      <section className="w-full max-w-[700px] mx-auto p-4 min-h-[calc(50vh-4rem)] flex flex-col justify-center items-center gap-4 text-center">
-        <div className="flex flex-col items-center gap-4">
+      <section className="w-full max-w-[700px] mx-auto py-8 px-4 md:min-h-[calc(50vh-4rem)] flex flex-col justify-center items-center gap-4 text-center">
+        <div className="flex flex-col items-center gap-2 md:gap-4">
           <h1 className="text-3xl md:text-6xl font-bold">Welcome to re_view</h1>
-          <p className="text-md md:text-2xl font-light">
+          <p className="text-sm md:text-xl font-light">
             Find the Best Products, Rated by Real Users
           </p>
         </div>
@@ -48,11 +48,11 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="container mx-auto p-4 min-h-[calc(50vh-4rem)]">
+      <div className="container mx-auto p-4 min-h-[calc(50vh-4rem)] flex flex-col gap-12">
         {/* Top Rated Products */}
         <section className="flex flex-col gap-4">
           <div>
-            <h2 className="text-xl md:text-2xl font-bold mb-1">
+            <h2 className="text-2xl md:text-4xl font-bold mb-1">
               Top Rated Products
             </h2>
             <p className="text-sm md:text-lg font-light">
@@ -78,6 +78,7 @@ export default function Home() {
                     name={product.name}
                     category={product.category}
                     image_url={product.image_url}
+                    thumbnail={product.thumbnail}
                     rating={product.rating}
                     review_count={product.review_count}
                   />
@@ -97,7 +98,7 @@ export default function Home() {
             <section key={category} className="flex flex-col gap-4">
               <div>
                 <div className="flex gap-4 items-center">
-                  <h2 className="text-xl md:text-2xl font-bold mb-1 capitalize">
+                  <h2 className="text-2xl md:text-3xl font-bold mb-1 capitalize">
                     {category}
                   </h2>
                   <hr className="w-full border-t border-gray-300" />
@@ -116,9 +117,11 @@ export default function Home() {
                       key={`product-$${product.id}-${index}`}
                       id={product.id}
                       name={product.name}
-                      // category={product.category}
                       description={product.description}
                       image_url={product.image_url}
+                      thumbnail={product.thumbnail}
+                      category={product.category}
+                      showCategory={false}
                       rating={product.rating}
                       review_count={product.review_count}
                     />
