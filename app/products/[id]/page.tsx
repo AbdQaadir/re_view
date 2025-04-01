@@ -9,11 +9,12 @@ import { useProduct } from "@/hooks/useProduct";
 import useSupabase from "@/hooks/useSupabase";
 import { ReviewType } from "@/types";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { ArrowLeft, Loader, PlusIcon, Search } from "lucide-react";
+import { ArrowLeft, PlusIcon, Search } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import ProductPageSkeleton from "@/app/_components/ProductPageSkeleton";
 
 export default function ProductPage() {
   // Hooks
@@ -23,9 +24,7 @@ export default function ProductPage() {
   const { isSignedIn } = useUser();
   const clerk = useClerk();
 
-  const { product, reviews, loading, error, refresh } = useProduct(
-    id as string
-  );
+  const { product, reviews, loading, refresh } = useProduct(id as string);
 
   // States
   const [isDeleting, setIsDeleting] = useState(false);
@@ -86,7 +85,7 @@ export default function ProductPage() {
       toast.info("Redirecting to sign in...");
 
       return clerk.redirectToSignIn({
-        redirectUrl: `window.location.href?modalOpen=true`,
+        redirectUrl: `${window.location.href}?modalOpen=true`,
       });
     }
 
@@ -95,6 +94,7 @@ export default function ProductPage() {
 
   return (
     <>
+      {/* Review Modal */}
       {isModalOpen && (
         <ReviewModal
           isOpen={isModalOpen}
@@ -107,18 +107,12 @@ export default function ProductPage() {
           productId={id as string}
         />
       )}
-      {loading && !product && (
-        <div className="fixed top-0 flex items-center justify-center h-screen w-full bg-white bg-opacity-90 z-50">
-          <Loader className="w-10 h-10 animate-spin" />
-        </div>
-      )}
 
-      {!loading && !product && error && (
-        <div className="max-w-6xl mx-auto p-6">
-          <p>Error: {error}</p>
-        </div>
-      )}
-      {product && (
+      {/*  Product Page Skeleton */}
+      {loading && !product && <ProductPageSkeleton />}
+
+      {/*  Product Page */}
+      {!loading && product && (
         <div className="max-w-6xl mx-auto py-3 md:py-6 px-3 md:px-6 pb-24">
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={handleGoBack}>
