@@ -12,9 +12,10 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import { ArrowLeft, PlusIcon, Search } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { toast } from "sonner";
 import ProductPageSkeleton from "@/app/_components/ProductPageSkeleton";
+import StarRatingSummary from "@/app/_components/StarRatingSummary";
 
 export default function ProductPage() {
   // Hooks
@@ -92,15 +93,31 @@ export default function ProductPage() {
     setIsModalOpen(true);
   };
 
+  const reviewsByRating = useMemo(() => {
+    return reviews.reduce((acc, review) => {
+      if (!acc[review.rating]) {
+        acc[review.rating] = [];
+      }
+
+      acc[review.rating].push(review);
+
+      return acc;
+    }, {} as Record<number, ReviewType[]>);
+  }, [reviews]);
+
   return (
     <>
       {/* Review Modal */}
       {isModalOpen && (
         <ReviewModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedReview(null);
+          }}
           onSuccess={() => {
             setIsModalOpen(false);
+            setSelectedReview(null);
             handleRefresh();
           }}
           selectedReview={selectedReview}
@@ -125,7 +142,7 @@ export default function ProductPage() {
           {/* Top Section: Image + Product Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
             {/* Product Image */}
-            <div className="flex justify-center w-full mx-auto border">
+            <div className="flex justify-center w-full mx-auto border min-h-[200px] md:min-h-[300px]">
               <Image
                 src={product.image_url}
                 alt={product.name}
@@ -155,80 +172,110 @@ export default function ProductPage() {
           </div>
 
           {/* Reviews Section */}
-          <div className="mt-10">
-            <div className="flex justify-between items-center border-b pb-2">
-              <h2 className="text-lg md:text-2xl font-semibold">
-                Customer Reviews
-              </h2>
+          <div className="mt-10 w-full">
+            <div className="w-full flex gap-4">
+              <div className="w-full flex-1 flex flex-col gap-2">
+                <div className="flex justify-between items-center border-b pb-2">
+                  <h2 className="text-lg md:text-2xl font-semibold">
+                    Customer Reviews
+                  </h2>
 
-              <Button size="sm" onClick={onClickAddReview}>
-                <PlusIcon className="w-4 h-4" />
-                Add
-              </Button>
-            </div>
+                  <Button size="sm" onClick={onClickAddReview}>
+                    <PlusIcon className="w-4 h-4" />
+                    Add
+                  </Button>
+                </div>
 
-            <div className="py-3">
-              {/* Filter by Rating */}
-              <div className="flex items-center gap-1 overflow-x-auto py-2">
-                <Button
-                  variant={selectedRating ? "outline" : "default"}
-                  onClick={() => setSelectedRating(null)}
-                  size="sm"
-                >
-                  All reviews
-                  <span className="ml-1">({reviews.length})</span>
-                </Button>
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const isActive = selectedRating === star;
-                  return (
+                <div className="py-3 w-full">
+                  {/* Filter by Rating */}
+                  <div className="w-full flex items-center gap-1 overflow-x-auto py-2">
                     <Button
-                      key={star}
-                      variant={isActive ? "default" : "outline"}
-                      onClick={() => setSelectedRating(star)}
+                      variant={selectedRating ? "outline" : "default"}
+                      onClick={() => setSelectedRating(null)}
                       size="sm"
                     >
-                      {star} ⭐
+                      All
+                      <span className="hidden md:inline">reviews</span>
+                      <span>({reviews.length})</span>
                     </Button>
-                  );
-                })}
+                    {[5, 4, 3, 2, 1].map((star) => {
+                      const isActive = selectedRating === star;
+                      return (
+                        <Button
+                          key={star}
+                          variant={isActive ? "default" : "outline"}
+                          onClick={() => setSelectedRating(star)}
+                          size="sm"
+                          className="gap-0.5"
+                        >
+                          {star}
+                          <p className="text-yellow-500">{"★"}</p>
+                        </Button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Reviews */}
+                  {filteredReviews.length > 0 && (
+                    <div className="flex flex-col gap-3 mt-4">
+                      {filteredReviews.map((review, index) => {
+                        const isLast = index === filteredReviews.length - 1;
+                        return (
+                          <React.Fragment key={`${review.id}-${index}`}>
+                            <ReviewCard
+                              review={review}
+                              isDeleting={isDeleting}
+                              onDelete={handleDeleteReview}
+                              onEdit={handleEditReview}
+                            />
+                            {!isLast && <hr className="border-b" />}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {!filteredReviews.length && (
+                    <div className="w-full flex flex-col gap-2 items-center justify-center min-h-32 py-10">
+                      <Search className="w-7 h-7" />
+
+                      <p className="text-gray-500">
+                        No reviews found
+                        {selectedRating && ` for ${selectedRating} stars`}
+                      </p>
+                      {!selectedRating && (
+                        <span>
+                          Click the &ldquo;Add&rdquo; button to add one!
+                        </span>
+                      )}
+
+                      {selectedRating && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          onClick={() => setSelectedRating(null)}
+                        >
+                          Clear filter
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Reviews */}
-              {filteredReviews.length > 0 ? (
-                <div className="space-y-6 mt-4">
-                  {filteredReviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      isDeleting={isDeleting}
-                      onDelete={handleDeleteReview}
-                      onEdit={handleEditReview}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="w-full flex flex-col gap-2 items-center justify-center min-h-32 py-5">
-                  <Search className="w-10 h-10" />
-
-                  <p className="text-gray-500">
-                    No reviews found
-                    {selectedRating && ` for ${selectedRating} stars`}
-                  </p>
-                  {!selectedRating && (
-                    <span>Click the &ldquo;Add&rdquo; button to add one!</span>
-                  )}
-
-                  {selectedRating && (
-                    <Button
-                      variant="link"
-                      size="sm"
-                      onClick={() => setSelectedRating(null)}
-                    >
-                      Clear filter
-                    </Button>
-                  )}
-                </div>
-              )}
+              <div className="hidden md:block sticky top-3 right-0 h-[fit-content]">
+                <StarRatingSummary
+                  averageRating={averageRating || 0}
+                  totalReviews={reviews?.length || 0}
+                  ratingDistribution={[
+                    { stars: 5, count: reviewsByRating[5]?.length || 0 },
+                    { stars: 4, count: reviewsByRating[4]?.length || 0 },
+                    { stars: 3, count: reviewsByRating[3]?.length || 0 },
+                    { stars: 2, count: reviewsByRating[2]?.length || 0 },
+                    { stars: 1, count: reviewsByRating[1]?.length || 0 },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         </div>
