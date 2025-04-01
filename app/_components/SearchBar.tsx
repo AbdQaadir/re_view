@@ -23,7 +23,7 @@ export default function SearchBar({ onClick, products }: SearchBarProps) {
         placeholder="Search for products..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="w-full py-4 px-3 border rounded-lg text-xs md:text-sm focus:outline-none"
+        className="w-full py-4 md:py-6 px-3 border rounded-lg text-xs md:text-sm focus:outline-none"
       />
       {query && (
         <div className="absolute w-full bg-white shadow-lg rounded-lg mt-1 max-h-60 overflow-y-auto">

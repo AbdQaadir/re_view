@@ -37,6 +37,7 @@ export type ReviewType = {
   title: string;
   review?: string;
   created_at: string;
+  image_url?: string;
 
   // Related data
   product?: ProductType;

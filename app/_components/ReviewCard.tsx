@@ -7,6 +7,7 @@ import {
 import { ReviewType } from "@/types";
 import { useUser } from "@clerk/nextjs";
 import { EllipsisVertical, Pen, Trash } from "lucide-react";
+import Image from "next/image";
 import React from "react";
 
 type ReviewCard = {
@@ -20,7 +21,7 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
 
   const isMyReview = review.user_id === user?.id;
   return (
-    <div key={review.id} className="border p-3 rounded-lg shadow-sm">
+    <div key={review.id} className="shadow-none">
       <div className="flex items-baseline justify-between">
         <p className="font-semibold">
           {review.user_id_to_user?.first_name}
@@ -61,7 +62,7 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
                 onClick={() => onEdit(review.id)}
               >
                 <Pen size={16} />
-                Edit
+                Edit review
               </Button>
             </PopoverContent>
           </Popover>
@@ -71,6 +72,19 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
       <p className="text-gray-700 font-medium">{review.title}</p>
 
       <p className="text-gray-500 font-light">{review.review}</p>
+
+      {/* Display image if available */}
+      {review.image_url && (
+        <div className="mt-3">
+          <Image
+            src={review.image_url}
+            alt="Review Image"
+            className="rounded-md"
+            width={150}
+            height={150}
+          />
+        </div>
+      )}
     </div>
   );
 }

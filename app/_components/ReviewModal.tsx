@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import useSupabase from "@/hooks/useSupabase";
 import { toast } from "sonner";
@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Loader } from "lucide-react";
-import { DB_TABLES } from "../_constants";
+import { DB_TABLES, STORAGE_BUCKET } from "../_constants";
 import { ReviewType } from "@/types";
+import Image from "next/image";
 
 export default function ReviewModal({
   productId,
@@ -34,21 +35,43 @@ export default function ReviewModal({
   const { user } = useUser();
   const supabase = useSupabase();
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     rating: selectedReview?.rating || 5,
     title: selectedReview?.title || "",
     review: selectedReview?.review || "",
+    image_url: selectedReview?.image_url || "", // Store image URL
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const isEditing = !!selectedReview?.id;
 
+  const handleImageUpload = async (file: File) => {
+    const fileName = `${user?.id}-${Date.now()}-${file.name}`;
+
+    const { data, error } = await supabase.storage
+      .from(STORAGE_BUCKET.REVIEW_IMAGES)
+      .upload(fileName, file);
+
+    if (error) {
+      toast.error("Image upload failed: " + error.message);
+      return null;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+      .from(STORAGE_BUCKET.REVIEW_IMAGES)
+      .getPublicUrl(data?.path);
+
+    return urlData.publicUrl;
+  };
+
   const handleSubmit = async () => {
     setLoading(true);
-    setError(null);
+
     try {
       const hasEmptyFields = !formData.title || !formData.rating;
 
@@ -65,6 +88,14 @@ export default function ReviewModal({
         return;
       }
 
+      const prevUploadedImageUrl = formData.image_url;
+      let newUploadedImageUrl;
+      if (selectedFile) {
+        newUploadedImageUrl = await handleImageUpload(selectedFile);
+      }
+
+      const uploadedImageUrl = newUploadedImageUrl || prevUploadedImageUrl;
+
       // Update existing review
       if (isEditing) {
         const { error } = await supabase
@@ -73,6 +104,7 @@ export default function ReviewModal({
             rating: formData.rating,
             title: formData.title,
             review: formData.review,
+            image_url: uploadedImageUrl,
           })
           .eq("id", selectedReview?.id)
           .select();
@@ -90,11 +122,12 @@ export default function ReviewModal({
       // Create new review
       const { error } = await supabase.from(DB_TABLES.REVIEW).insert([
         {
+          user_id: user?.id as string,
           product_id: productId,
           rating: formData.rating,
           title: formData.title,
           review: formData.review,
-          user_id: user?.id as string,
+          image_url: uploadedImageUrl,
         },
       ]);
 
@@ -125,6 +158,12 @@ export default function ReviewModal({
 
   if (!isOpen) return <></>;
 
+  const hasImage = formData.image_url || selectedFile;
+  const imageURL = formData.image_url
+    ? formData.image_url
+    : selectedFile
+    ? URL.createObjectURL(selectedFile as any)
+    : "";
   return (
     <Dialog
       defaultOpen
@@ -133,7 +172,7 @@ export default function ReviewModal({
         if (!open) onClose();
       }}
     >
-      <DialogContent>
+      <DialogContent className="px-4">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Update Review" : "Add Review"}
@@ -143,62 +182,104 @@ export default function ReviewModal({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Rating Selection */}
-        <div className="flex flex-col gap-1">
-          <Label className="block font-semibold" htmlFor="title">
-            Rating <span className="text-red-500">*</span>
-          </Label>
+        <div className="flex flex-col gap-4 pb-12 overflow-y-auto max-h-[70vh]">
+          {/* Rating Selection */}
+          <div className="flex flex-col gap-1">
+            <Label className="block font-semibold" htmlFor="title">
+              Rating <span className="text-red-500">*</span>
+            </Label>
 
-          <div className="w-full flex items-center space-x-2">
-            {[5, 4, 3, 2, 1].map((num) => (
+            <div className="w-full flex items-center space-x-2">
+              {[5, 4, 3, 2, 1].map((num) => (
+                <Button
+                  key={num}
+                  variant={formData.rating === num ? "default" : "outline"}
+                  onClick={() => handleChange("rating", num)}
+                  size="icon"
+                  className="flex-1 text-xs py-1"
+                >
+                  {num} ⭐
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Title */}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="title">
+              Title <span className="text-red-500">*</span>
+            </Label>
+            <input
+              required
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              className="w-full p-2 border rounded font-light text-sm"
+              placeholder="Title of your review"
+            />
+            {formErrors.title && (
+              <span className="text-xs text-red-700">{formErrors.title}</span>
+            )}
+          </div>
+
+          {/* Comment */}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="review">
+              Review{" "}
+              <span className="text-gray-500 font-light">(optional)</span>
+            </Label>
+            <textarea
+              value={formData.review}
+              id="review"
+              onChange={(e) => handleChange("review", e.target.value)}
+              className="w-full p-2 border rounded h-20 font-light text-sm"
+              placeholder="Write your review here..."
+            />
+          </div>
+
+          {/* Image Upload */}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="image">
+              Upload Image{" "}
+              <span className="text-gray-500 font-light">(optional)</span>
+            </Label>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              id="image"
+              onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+              // Make it invisible and use a button to trigger file selection
+              className="w-full p-2 border rounded font-light text-sm hidden"
+            />
+
+            <div className="flex items-center gap-2">
+              {hasImage ? (
+                <Image
+                  src={imageURL}
+                  alt="Review Image"
+                  className="w-32 h-32 object-cover rounded-lg border-1 p-1"
+                  width={128}
+                  height={128}
+                />
+              ) : (
+                <div className="w-32 h-32 bg-gray-100 rounded-lg border-1 p-1 flex justify-center items-center">
+                  <span className="text-gray-500">No image</span>
+                </div>
+              )}
               <Button
-                key={num}
-                variant={formData.rating === num ? "default" : "outline"}
-                onClick={() => handleChange("rating", num)}
-                size="icon"
-                className="flex-1 text-xs py-1"
+                variant="outline"
+                onClick={() => inputRef?.current?.click()}
               >
-                {num} ⭐
+                {hasImage ? "Change" : "Upload"}
               </Button>
-            ))}
+            </div>
+
+            {selectedFile && (
+              <p className="text-xs text-gray-500">{selectedFile.name}</p>
+            )}
           </div>
         </div>
-
-        {/* Title */}
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="title">
-            Title <span className="text-red-500">*</span>
-          </Label>
-          <input
-            required
-            id="title"
-            value={formData.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            className="w-full p-2 border rounded font-light text-sm"
-            placeholder="Title of your review"
-          />
-          {formErrors.title && (
-            <span className="text-xs text-red-700">{formErrors.title}</span>
-          )}
-        </div>
-
-        {/* Comment */}
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="review">
-            Review <span className="text-gray-500 font-light">(optional)</span>
-          </Label>
-          <textarea
-            value={formData.review}
-            id="review"
-            onChange={(e) => handleChange("review", e.target.value)}
-            className="w-full p-2 border rounded h-20 font-light text-sm"
-            placeholder="Write your review here..."
-          />
-        </div>
-
-        {/* Error Message */}
-        {error && <p className="text-red-500">{error}</p>}
-
         <DialogFooter>
           <div className="flex justify-end space-x-2">
             <Button variant={"outline"} onClick={onClose}>

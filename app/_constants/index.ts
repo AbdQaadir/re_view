@@ -11,3 +11,7 @@ export enum DB_TABLES {
   REVIEW = "review",
   USER = "user",
 }
+
+export enum STORAGE_BUCKET {
+  REVIEW_IMAGES = "review-images",
+}

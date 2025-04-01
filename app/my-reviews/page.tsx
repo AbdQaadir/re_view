@@ -7,7 +7,7 @@ import useSupabase from "@/hooks/useSupabase";
 import { useRouter } from "next/navigation";
 import { ReviewType } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { Loader, Pen, Search } from "lucide-react";
+import { ArrowLeft, Loader, NotepadText, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function MyReviews() {
@@ -45,9 +45,18 @@ export default function MyReviews() {
   const handleClick = (id: string) => {
     router.push(`/products/${id}`);
   };
+
+  const handleGoBack = () => {
+    router.back();
+  };
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">My Reviews</h1>
+      <h1 className="text-2xl font-bold mb-6 flex gap-1 items-center">
+        <Button variant="ghost" onClick={handleGoBack} size="icon">
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        My Reviews
+      </h1>
 
       {loading && !reviews.length && (
         <div className="flex flex-col items-center justify-center space-x-2">
@@ -75,6 +84,7 @@ export default function MyReviews() {
           </Button>
         </div>
       )}
+
       <div className="space-y-6">
         {reviews.map((review) => {
           return (
@@ -112,8 +122,8 @@ export default function MyReviews() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <h3 className="text-gray-900 font-bold flex items-center gap-2">
-                    <Pen className="w-4 h-4" />
+                  <h3 className="text-gray-900 font-bold flex items-center gap-1">
+                    <NotepadText className="w-4 h-4" />
                     <span className="font-medium">{review.title}</span>
                   </h3>
                   {review.review && (
