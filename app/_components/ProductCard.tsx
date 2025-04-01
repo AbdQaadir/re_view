@@ -48,15 +48,17 @@ export default function ProductCard({
       className={`bg-white flex shadow-lg rounded-xl overflow-hidden ${className}`}
     >
       <Link href={`/products/${id}`} className="w-full flex flex-col">
-        <AspectRatio ratio={1} className="flex items-center justify-center ">
-          <Image
-            src={image_url || thumbnail || ""}
-            alt={name}
-            width={400}
-            height={200}
-            className={`w-full h-full mx-auto object-contain scale-${scaleValue}`}
-          />
-        </AspectRatio>
+        <div className="mx-auto w-[200px] md:w-full">
+          <AspectRatio ratio={1} className="flex items-center justify-center ">
+            <Image
+              src={image_url || thumbnail || ""}
+              alt={name}
+              width={400}
+              height={200}
+              className={`w-full h-full mx-auto object-contain scale-${scaleValue}`}
+            />
+          </AspectRatio>
+        </div>
 
         <div className="h-full flex flex-col flex-1 justify-between py-4 px-4">
           <div className="flex-1">
