@@ -7,9 +7,11 @@ export default function ProductCardSkeleton({ className = "" }) {
       className={`bg-white flex shadow-lg rounded-xl overflow-hidden ${className}`}
     >
       <div className="w-full flex flex-col">
-        <AspectRatio ratio={1} className="flex items-center justify-center">
-          <Skeleton className="w-full h-full" />
-        </AspectRatio>
+        <div className="mx-auto w-[200px] md:w-full">
+          <AspectRatio ratio={1} className="flex items-center justify-center">
+            <Skeleton className="w-full h-full" />
+          </AspectRatio>
+        </div>
 
         <div className="h-full flex flex-col flex-1 justify-between py-4 px-4">
           <div className="flex-1">
