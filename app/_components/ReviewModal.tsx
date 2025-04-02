@@ -39,7 +39,7 @@ export default function ReviewModal({
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    rating: selectedReview?.rating || 5,
+    rating: selectedReview?.rating || 0,
     review: selectedReview?.review || "",
     image_url: selectedReview?.image_url || "", // Store image URL
   });
@@ -177,9 +177,11 @@ export default function ReviewModal({
               Rating <span className="text-red-500">*</span>
             </Label>
 
-            <div className="w-full flex items-center space-x-4">
+            <div className="w-full flex items-center space-x-2 md:space-x-4">
               <div>
-                <span className="text-4xl py-1 cursor-pointer">😢</span>
+                <span className="text-2xl md:text-4xl py-1 cursor-pointer">
+                  😢
+                </span>
               </div>
               {[1, 2, 3, 4, 5].map((num) => {
                 const isChecked = num <= formData.rating;
@@ -189,7 +191,7 @@ export default function ReviewModal({
                     onClick={() => handleChange("rating", num)}
                     role="button"
                     aria-label={`Rate ${num} star`}
-                    className={`text-4xl py-1 cursor-pointer ${
+                    className={`text-2xl md:text-4xl py-1 cursor-pointer ${
                       isChecked ? "text-yellow-500" : "text-gray-300"
                     }`}
                   >
@@ -199,7 +201,9 @@ export default function ReviewModal({
               })}
 
               <div>
-                <span className="text-4xl py-1 cursor-pointer">😃</span>
+                <span className="text-2xl md:text-4xl py-1 cursor-pointer">
+                  😃
+                </span>
               </div>
             </div>
 

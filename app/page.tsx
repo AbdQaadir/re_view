@@ -134,7 +134,7 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <footer className="p-4 bg-gray-800 text-white text-center py-8 mt-8">
+      <footer className="text-sm md:text-md p-4 bg-gray-800 text-white text-center py-8 mt-8">
         <p>&copy; {new Date().getFullYear()} re_view. All rights reserved.</p>
 
         <p>
@@ -144,7 +144,7 @@ export default function Home() {
           </span>{" "}
           by{" "}
           <a
-            href="https://github.com/abdqaadir"
+            href="https://www.linkedin.com/in/quadri-lateef-b45044171/"
             target="_blank"
             rel="noreferrer"
             className="underline"
