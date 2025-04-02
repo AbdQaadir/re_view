@@ -161,7 +161,7 @@ export default function ProductPage() {
 
               <div className="flex items-center space-x-2">
                 <p className="text-yellow-500 text-lg">
-                  ⭐ {averageRating.toFixed(1)}
+                  ★ {averageRating.toFixed(1)}
                 </p>
                 <p className="text-gray-500">({reviews.length} reviews)</p>
               </div>

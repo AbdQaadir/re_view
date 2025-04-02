@@ -23,16 +23,12 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
   return (
     <div key={review.id} className="shadow-none">
       <div className="flex items-baseline justify-between">
-        <p className="font-semibold">
-          {review.user_id_to_user?.first_name}
-
-          {isMyReview && <span> (You)</span>}
-
-          <span className="text-gray-500 text-sm font-light ml-2">
-            {new Date(review.created_at).toLocaleDateString()}
+        <div>
+          <span className="text-yellow-500">{`★\t`.repeat(review.rating)}</span>
+          <span className="text-gray-400">
+            {`★\t`.repeat(5 - review.rating)}
           </span>
-        </p>
-
+        </div>
         {isMyReview && (
           <Popover>
             <PopoverTrigger>
@@ -68,14 +64,12 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
           </Popover>
         )}
       </div>
-      <p className="text-yellow-500">⭐ {review.rating}/5</p>
-      <p className="text-gray-700 font-medium">{review.title}</p>
 
-      <p className="text-gray-500 font-light">{review.review}</p>
+      <p className="text-gray-900 font-light">{review.review}</p>
 
       {/* Display image if available */}
       {review.image_url && (
-        <div className="mt-3">
+        <div className="">
           <Image
             src={review.image_url}
             alt="Review Image"
@@ -85,6 +79,19 @@ function ReviewCard({ review, isDeleting, onDelete, onEdit }: ReviewCard) {
           />
         </div>
       )}
+      <div className="mt-2 flex gap-2 items-center">
+        <span className="text-gray-500 text-sm font-light">
+          {new Date(review.created_at).toLocaleDateString()}
+        </span>
+
+        <p className="text-gray-600 text-sm font-light">
+          - by{" "}
+          {review.user_id_to_user?.username
+            ? `@${review.user_id_to_user?.username}`
+            : review.user_id_to_user?.first_name}
+          {isMyReview && <span> (Me)</span>}
+        </p>
+      </div>
     </div>
   );
 }

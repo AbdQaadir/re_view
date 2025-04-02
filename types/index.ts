@@ -34,7 +34,6 @@ export type ReviewType = {
   user_id: string;
   user_id_to_user?: UserType;
   rating: number;
-  title: string;
   review?: string;
   created_at: string;
   image_url?: string;

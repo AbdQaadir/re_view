@@ -40,7 +40,6 @@ export default function ReviewModal({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     rating: selectedReview?.rating || 5,
-    title: selectedReview?.title || "",
     review: selectedReview?.review || "",
     image_url: selectedReview?.image_url || "", // Store image URL
   });
@@ -73,17 +72,8 @@ export default function ReviewModal({
     setLoading(true);
 
     try {
-      const hasEmptyFields = !formData.title || !formData.rating;
-
-      if (!formData.title) {
-        setFormErrors((prev) => ({ ...prev, title: "Title is required" }));
-      }
-
       if (!formData.rating) {
         setFormErrors((prev) => ({ ...prev, rating: "Rating is required" }));
-      }
-
-      if (hasEmptyFields) {
         setLoading(false);
         return;
       }
@@ -102,7 +92,6 @@ export default function ReviewModal({
           .from(DB_TABLES.REVIEW)
           .update({
             rating: formData.rating,
-            title: formData.title,
             review: formData.review,
             image_url: uploadedImageUrl,
           })
@@ -125,7 +114,6 @@ export default function ReviewModal({
           user_id: user?.id as string,
           product_id: productId,
           rating: formData.rating,
-          title: formData.title,
           review: formData.review,
           image_url: uploadedImageUrl,
         },
@@ -173,7 +161,7 @@ export default function ReviewModal({
       }}
     >
       <DialogContent className="px-4">
-        <DialogHeader>
+        <DialogHeader className="pb-2 border-b">
           <DialogTitle>
             {isEditing ? "Update Review" : "Add Review"}
           </DialogTitle>
@@ -182,43 +170,41 @@ export default function ReviewModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4 pb-12 overflow-y-auto max-h-[70vh]">
+        <div className="flex flex-col gap-4 pb-6 overflow-y-auto max-h-[70vh]">
           {/* Rating Selection */}
           <div className="flex flex-col gap-1">
             <Label className="block font-semibold" htmlFor="title">
               Rating <span className="text-red-500">*</span>
             </Label>
 
-            <div className="w-full flex items-center space-x-2">
-              {[5, 4, 3, 2, 1].map((num) => (
-                <Button
-                  key={num}
-                  variant={formData.rating === num ? "default" : "outline"}
-                  onClick={() => handleChange("rating", num)}
-                  size="icon"
-                  className="flex-1 text-xs py-1"
-                >
-                  {num} ⭐
-                </Button>
-              ))}
-            </div>
-          </div>
+            <div className="w-full flex items-center space-x-4">
+              <div>
+                <span className="text-4xl py-1 cursor-pointer">😢</span>
+              </div>
+              {[1, 2, 3, 4, 5].map((num) => {
+                const isChecked = num <= formData.rating;
+                return (
+                  <span
+                    key={num}
+                    onClick={() => handleChange("rating", num)}
+                    role="button"
+                    aria-label={`Rate ${num} star`}
+                    className={`text-4xl py-1 cursor-pointer ${
+                      isChecked ? "text-yellow-500" : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                );
+              })}
 
-          {/* Title */}
-          <div className="flex flex-col gap-1">
-            <Label htmlFor="title">
-              Title <span className="text-red-500">*</span>
-            </Label>
-            <input
-              required
-              id="title"
-              value={formData.title}
-              onChange={(e) => handleChange("title", e.target.value)}
-              className="w-full p-2 border rounded font-light text-sm"
-              placeholder="Title of your review"
-            />
-            {formErrors.title && (
-              <span className="text-xs text-red-700">{formErrors.title}</span>
+              <div>
+                <span className="text-4xl py-1 cursor-pointer">😃</span>
+              </div>
+            </div>
+
+            {formErrors.rating && (
+              <p className="text-red-500 text-sm">{formErrors.rating}</p>
             )}
           </div>
 
@@ -280,7 +266,7 @@ export default function ReviewModal({
             )}
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="border-t pt-2">
           <div className="flex justify-end space-x-2">
             <Button variant={"outline"} onClick={onClose}>
               Cancel
