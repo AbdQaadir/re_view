@@ -5,36 +5,24 @@ import { useSession } from "@clerk/nextjs";
 
 // Create a custom supabase client that injects the Clerk Supabase token into the request headers
 const useSupabase = () => {
-  // The `useSession()` hook will be used to get the Clerk session object
   const { session } = useSession();
 
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_KEY!,
-    {
-      global: {
-        // Get the custom Supabase token from Clerk
-        fetch: async (url, options = {}) => {
-          const clerkToken = await session?.getToken({
-            template: "supabase",
-          });
-
-          // Insert the Clerk Supabase token into the headers
-          const headers = new Headers(options?.headers);
-
-          if (clerkToken) {
-            headers.set("Authorization", `Bearer ${clerkToken}`);
-          }
-
-          // Now call the default fetch
-          return fetch(url, {
-            ...options,
-            headers,
-          });
+  // Create a custom Supabase client that injects the Clerk session token into the request headers
+  function createClerkSupabaseClient() {
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_KEY!,
+      {
+        async accessToken() {
+          return session?.getToken() ?? null;
         },
-      },
-    }
-  );
+      }
+    );
+  }
+  // Create a `client` object for accessing Supabase data using the Clerk token
+  const client = createClerkSupabaseClient();
+
+  return client;
 };
 
 export default useSupabase;
